@@ -247,18 +247,22 @@ function updateGameArea() {
 
 
 function move(dir) {
+	
     myGamePiece.image.src = "angry.png";
-	myGamePiece.update();
+	
+	
     if (dir == "up") {myGamePiece.speedY = -1; myGamePiece.gravity = -0.05;  }
     if (dir == "down") {myGamePiece.speedY = 1; myGamePiece.gravity = +0.1;}
     if (dir == "left") {myGamePiece.speedX = -1; myGamePiece.accelerateXspeed = -2;}
     if (dir == "right") {myGamePiece.speedX = 1; myGamePiece.accelerateXspeed = +2;}
+myGamePiece.update();
 }
 
 function clearmove() {
     myGamePiece.image.src = "smiley.png";
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
+	myGamePiece.update();
 }
 </script>
 <div style="text-align:center;width:480px;">
