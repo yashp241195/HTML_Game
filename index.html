@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+
+function getKeyBoardStatus(){
+return false;
+//set true if you want to use keyboard instead
+}
+
+var myGamePiece;
+
+var keyboard = getKeyBoardStatus();
+
+
+function startGame() {
+	myScore = new component("30px", "Consolas", "black", 380, 40, "text");
+    myGamePiece = new component(40, 40, "smiley.png", 10, 40, "image");
+	
+    myGameArea.start();
+	
+	
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 880;
+        this.canvas.height = 470;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
+		
+		if(keyboard){
+		window.addEventListener('keydown', function (e) {
+            myGameArea.key = e.keyCode;
+        })
+        window.addEventListener('keyup', function (e) {
+            myGameArea.key = false;
+        })
+		
+		}
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+	
+        clearInterval(this.interval);
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    if (type == "image") {
+        this.image = new Image();
+		this.image.src = color;
+    }
+	
+
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;
+
+    this.bounce = 0.9;
+
+	this.accelerateX = 0.5;
+	this.accelerateXspeed = 0;
+	
+	
+	this.gravity = 0.1;
+    this.gravitySpeed = 0;
+
+
+	
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (type == "image") {
+		
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+				
+        } if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+		}
+		
+    }
+    this.newPos = function() {
+		this.gravitySpeed += this.gravity;
+        this.x += this.speedX + this.accelerateXspeed;
+        this.y += this.speedY+ this.gravitySpeed; 
+		this.hitBoundary();
+		
+
+		
+    }
+	
+	this.hitBoundary = function() {
+	
+        var PeakBottom = myGameArea.canvas.height - this.height;
+		var PeakRight = myGameArea.canvas.width - this.width;
+		
+        if (this.y > PeakBottom  ) {
+            this.y = PeakBottom;
+			this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+        }
+		if(this.y < 0){
+			this.y = 0;
+			this.gravitySpeed = (this.gravitySpeed * this.bounce);
+		}
+		if(this.x < 0){
+			this.x = 0;
+			this.accelerateXspeed = -(this.accelerateXspeed * this.bounce);
+
+		}
+		if(this.x > PeakRight ){
+			this.x = PeakRight;
+			this.accelerateXspeed = -(this.accelerateXspeed * this.bounce);
+
+		}
+		
+    }
+	
+	
+	
+	this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+	
+}
+
+
+var objs = [];
+
+for (i=2;i<5;i++){
+	objs.push(new component(10, 80, "obstacle.png", i*200, 120,"image"));
+
+}
+
+
+
+
+function updateGameArea() {
+	
+	 myGameArea.clear();
+	     myGameArea.frameNo += 1;
+
+	 
+	for (i=0; i<objs.length; i++){
+		myObs = objs[i];
+		
+		if (myGamePiece.crashWith(myObs)) {
+				myGameArea.stop();
+				break;
+				
+		} 
+		else{
+		
+			
+			myObs.x-=1;
+			
+			if(myObs.x < -80){
+			
+				minHeight = 20;
+				maxHeight = myGameArea.canvas.height;
+				
+				pos = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+				myObs.x = myGameArea.canvas.width;
+				myObs.y = pos;
+				
+				Height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+				myObs.height = Height;
+				
+			}
+			myObs.update();
+			
+		}	
+		
+		
+			
+						
+
+	
+	
+			
+	}
+	
+	
+	for (i=0; i<objs.length; i++){
+		myObs = objs[i];
+		myObs.update();
+	}
+	myScore.text="SCORE: " + myGameArea.frameNo;
+	myScore.update();
+	
+	myGamePiece.newPos();
+	myGamePiece.update();
+			
+			
+			
+
+			if(keyboard){
+				myGamePiece.speedX = 0;
+				myGamePiece.speedY = 0; 
+				
+				if (myGameArea.key && myGameArea.key == 37) {myGamePiece.speedX = -1; }
+				if (myGameArea.key && myGameArea.key == 39) {myGamePiece.speedX = 1; }
+				if (myGameArea.key && myGameArea.key == 38) {myGamePiece.speedY = -1; }
+				if (myGameArea.key && myGameArea.key == 40) {myGamePiece.speedY = 1; }
+				
+			
+			
+			}
+			
+			
+} 
+
+
+
+function move(dir) {
+    myGamePiece.image.src = "angry.png";
+    if (dir == "up") {myGamePiece.speedY = -1; myGamePiece.gravity = -0.05;  }
+    if (dir == "down") {myGamePiece.speedY = 1; myGamePiece.gravity = +0.1;}
+    if (dir == "left") {myGamePiece.speedX = -1; myGamePiece.accelerateXspeed = -2;}
+    if (dir == "right") {myGamePiece.speedX = 1; myGamePiece.accelerateXspeed = +2;}
+}
+
+function clearmove() {
+    myGamePiece.image.src = "smiley.png";
+    myGamePiece.speedX = 0; 
+    myGamePiece.speedY = 0; 
+}
+</script>
+<div style="text-align:center;width:480px;">
+  <button onmousedown="move('up')" onmouseup="clearmove()" ontouchstart="move('up')">UP</button><br><br>
+  <button onmousedown="move('left')" onmouseup="clearmove()" ontouchstart="move('left')">LEFT</button>
+  <button onmousedown="move('right')" onmouseup="clearmove()" ontouchstart="move('right')">RIGHT</button><br><br>
+  <button onmousedown="move('down')" onmouseup="clearmove()" ontouchstart="move('down')">DOWN</button>
+</div>
+<br />
+
+<br />
+</body>
+</html>
