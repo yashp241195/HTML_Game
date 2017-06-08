@@ -17,17 +17,22 @@ return false;
 //set true if you want to use keyboard instead
 }
 
-var myGamePiece;
+var myGamePiece,myBackground;
 
 var keyboard = getKeyBoardStatus();
 
 
 function startGame() {
 	myScore = new component("30px", "Consolas", "black", 380, 40, "text");
-    myGamePiece = new component(40, 40, "smiley.png", 10, 40, "image");
+
+    
+	myGamePiece = new component(40, 40, "smiley.png", 10, 40, "player");
+    
 	
-    myGameArea.start();
-	
+	myGameArea.start();
+
+	myBackground = new component(2*myGameArea.canvas.width, myGameArea.canvas.height, "bkg.jpg", -myGameArea.canvas.width, 40, "image");
+
 	
 }
 
@@ -35,7 +40,7 @@ var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
         this.canvas.width = 880;
-        this.canvas.height = 470;
+        this.canvas.height = 400;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
@@ -62,7 +67,7 @@ var myGameArea = {
 
 function component(width, height, color, x, y, type) {
     this.type = type;
-    if (type == "image") {
+    if (type == "image" || type == "player") {
         this.image = new Image();
 		this.image.src = color;
     }
@@ -88,7 +93,7 @@ function component(width, height, color, x, y, type) {
 	
     this.update = function() {
         ctx = myGameArea.context;
-        if (type == "image") {
+        if (type == "player" || type == "image") {
 		
             ctx.drawImage(this.image, 
                 this.x, 
@@ -106,16 +111,27 @@ function component(width, height, color, x, y, type) {
 		this.gravitySpeed += this.gravity;
         this.x += this.speedX + this.accelerateXspeed;
         this.y += this.speedY+ this.gravitySpeed; 
-		this.hitBoundary();
+		
+		if(type == "player" ){
+			this.hitBoundaryX();
+		}
+		if(type == "image" ){
+			if(this.x == 0){
+				this.x= -myGameArea.canvas.width;
+			}
+		}
+		
+		this.hitBoundaryY();
+
+		
 		
 
 		
     }
 	
-	this.hitBoundary = function() {
+	this.hitBoundaryY = function() {
 	
         var PeakBottom = myGameArea.canvas.height - this.height;
-		var PeakRight = myGameArea.canvas.width - this.width;
 		
         if (this.y > PeakBottom  ) {
             this.y = PeakBottom;
@@ -125,6 +141,13 @@ function component(width, height, color, x, y, type) {
 			this.y = 0;
 			this.gravitySpeed = (this.gravitySpeed * this.bounce);
 		}
+	}
+	
+	this.hitBoundaryX = function() {
+	
+			var PeakRight = myGameArea.canvas.width - this.width;
+
+	
 		if(this.x < 0){
 			this.x = 0;
 			this.accelerateXspeed = -(this.accelerateXspeed * this.bounce);
@@ -172,7 +195,14 @@ for (i=2;i<5;i++){
 function updateGameArea() {
 	
 	 myGameArea.clear();
-	     myGameArea.frameNo += 1;
+	 myBackground.x += 1;
+	 
+	 myBackground.newPos(); 
+	 
+		
+
+    myBackground.update();
+	myGameArea.frameNo += 1;
 
 	 
 	for (i=0; i<objs.length; i++){
@@ -190,17 +220,19 @@ function updateGameArea() {
 			
 			if(myObs.x < -80){
 			
-				minHeight = 20;
+				minHeight = -20;
 				maxHeight = myGameArea.canvas.height;
 				
 				pos = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
 				myObs.x = myGameArea.canvas.width;
 				myObs.y = pos;
 				
+				maxHeight = myGameArea.canvas.height-myGamePiece.height-30;
 				Height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
 				myObs.height = Height;
 				
 			}
+			
 			myObs.update();
 			
 		}	
@@ -219,6 +251,7 @@ function updateGameArea() {
 		myObs = objs[i];
 		myObs.update();
 	}
+		
 	myScore.text="SCORE: " + myGameArea.frameNo;
 	myScore.update();
 	
@@ -247,22 +280,17 @@ function updateGameArea() {
 
 
 function move(dir) {
-	
-    //myGamePiece.image.src = "angry.png";
-	
-	
+    
     if (dir == "up") {myGamePiece.speedY = -1; myGamePiece.gravity = -0.05;  }
     if (dir == "down") {myGamePiece.speedY = 1; myGamePiece.gravity = +0.1;}
     if (dir == "left") {myGamePiece.speedX = -1; myGamePiece.accelerateXspeed = -2;}
     if (dir == "right") {myGamePiece.speedX = 1; myGamePiece.accelerateXspeed = +2;}
-//myGamePiece.update();
 }
 
 function clearmove() {
     myGamePiece.image.src = "smiley.png";
     myGamePiece.speedX = 0; 
     myGamePiece.speedY = 0; 
-	//myGamePiece.update();
 }
 </script>
 <div style="text-align:center;width:480px;">
