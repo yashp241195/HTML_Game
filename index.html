@@ -9,6 +9,8 @@ canvas {
 }
 </style>
 </head>
+	
+	
 <body onload="startGame()">
 <script>
 
@@ -21,17 +23,27 @@ var myGamePiece,myBackground;
 
 var keyboard = getKeyBoardStatus();
 
+var Width_Of_Screen = 880;
+var Height_Of_Screen = 400;
 
 function startGame() {
+	
+	// scorecard
+	
 	myScore = new component("30px", "Consolas", "black", 380, 40, "text");
 
-    
+	// Player
 	myGamePiece = new component(40, 40, "smiley.png", 10, 40, "player");
+	
+	// background 
+
+	myBackground = new component(2*Width_Of_Screen, Height_Of_Screen, "bkg.jpg", -Width_Of_Screen, 40, "image");
     
+	// start the Game Area 
 	
 	myGameArea.start();
-
-	myBackground = new component(2*myGameArea.canvas.width, myGameArea.canvas.height, "bkg.jpg", -myGameArea.canvas.width, 40, "image");
+	
+	
 
 	
 }
@@ -39,8 +51,9 @@ function startGame() {
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
-        this.canvas.width = 880;
-        this.canvas.height = 400;
+        this.canvas.width = Width_Of_Screen;
+        this.canvas.height = Height_Of_Screen;
+	    
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
@@ -48,10 +61,10 @@ var myGameArea = {
 		
 		if(keyboard){
 		window.addEventListener('keydown', function (e) {
-            myGameArea.key = e.keyCode;
+                myGameArea.key = e.keyCode;
         })
-        window.addEventListener('keyup', function (e) {
-            myGameArea.key = false;
+                window.addEventListener('keyup', function (e) {
+                myGameArea.key = false;
         })
 		
 		}
